@@ -1,23 +1,41 @@
 import React from "react";
-import "../css/index.css";
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
-import { RippleBadge } from "./MaterialTheme/styled";
+import { Container } from "@mui/material";
+import { Route, Switch, useLocation } from "react-router-dom";
+import { OrdersPage } from "../screens/ordersPage";
+import { HomeNavbar } from "../components/headers/HomeNavbar";
+import { ProductsPage } from "../screens/productsPage";
+import { UsersPage } from "../screens/userPage";
+import { HomePage } from "../screens/homePage";
+import { OtherNavbar } from "../components/headers/OtherNavbar";
+import Footer from "../components/footers";
+
+import "../css/App.css";
+import "../css/Navbar.css";
+import "../css/footer.css";
 
 function App() {
+  const location = useLocation();
   return (
-    <Container maxWidth="sm">
-      <Stack flexDirection={"column"}>
-        <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component={"h4"}>
-            Create React App On TYpeScript with REDUX
-          </Typography>
-        </Box>
-        <Box>
-          <RippleBadge badgeContent={4}></RippleBadge>
-        </Box>
-        <Button variant="contained">Contained</Button>
-      </Stack>
-    </Container>
+    <>
+      <Container>
+        {location.pathname === "/" ? <HomeNavbar /> : <OtherNavbar />}
+        <Switch>
+          <Route path="/products">
+            <ProductsPage />
+          </Route>
+          <Route path="/orders">
+            <OrdersPage />
+          </Route>
+          <Route path="/member-page">
+            <UsersPage />
+          </Route>
+          <Route path="/">
+            <HomePage />
+          </Route>
+        </Switch>
+        <Footer />
+      </Container>
+    </>
   );
 }
 
