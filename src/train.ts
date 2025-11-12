@@ -1,10 +1,10 @@
-function calculate(expr: string): number {
-  return expr
-    .split("+")
-    .map((part) => Number(part.trim()))
-    .reduce((sum, n) => sum + n, 0);
+function missingNumberFunc(nums: number[]): number {
+  const n = nums.length;
+  const expectedSum = (n * (n + 1)) / 2;
+  const actualSum = nums.reduce((acc, num) => acc + num, 0);
+  return expectedSum - actualSum;
 }
 
-console.log(calculate("1+3"));
+console.log(missingNumberFunc([3, 0, 1]));
 
 export {};
