@@ -11,6 +11,7 @@ import Footer from "../components/footers";
 import "../css/App.css";
 import "../css/Navbar.css";
 import "../css/footer.css";
+import { HelpPage } from "../screens/helpPage";
 
 function App() {
   const location = useLocation();
@@ -26,6 +27,9 @@ function App() {
         </Route>
         <Route path="/member-page">
           <UsersPage />
+        </Route>
+        <Route path="/help">
+          <HelpPage />
         </Route>
         <Route path="/">
           <HomePage />
