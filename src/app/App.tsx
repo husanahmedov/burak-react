@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Switch, useLocation } from "react-router-dom";
 import { OrdersPage } from "../screens/ordersPage";
 import { HomeNavbar } from "../components/headers/HomeNavbar";
-import { ProductsPage } from "../screens/productsPage";
+import ProductsPage  from "../screens/productsPage";
 import { UsersPage } from "../screens/userPage";
 import HomePage from "../screens/homePage";
 import { OtherNavbar } from "../components/headers/OtherNavbar";
