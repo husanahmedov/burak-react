@@ -1,15 +1,37 @@
 import { Box, Button, Container, Stack } from "@mui/material";
 import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export function HomeNavbar() {
   const authMember = null;
+  const [count, setCount] = useState<number>(0);
+  const [value, setValue] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log("Component mounted");
+    setCount(count+1)
+
+    return () => {
+      console.log("Component unmounted");
+    }
+  }, [value]);
+
+  /** HANDLERS **/
+  const buttonHandler = () => {
+    setValue(!value);
+  };
+
   return (
     <div className="home-navbar">
       <Container className="navbar-container">
         <Stack className="menu">
           <Box>
             <NavLink to="/">
-              <img className="brand-logo" src="/icons/burak.svg" alt="no-image" />
+              <img
+                className="brand-logo"
+                src="/icons/burak.svg"
+                alt="no-image"
+              />
             </NavLink>
           </Box>
           <Stack className="links">
@@ -63,10 +85,14 @@ export function HomeNavbar() {
           <Stack className="detail">
             <Box className="head-main-text">World's Most Delicious Cousine</Box>
             <Box className="wel-text">The Choise, not just a choise</Box>
-            <Box className="service-text">24 hours service</Box>
+            <Box className="service-text">{count} hours service</Box>
             <Box className="signup">
               {!authMember ? (
-                <Button variant="contained" className="signup-button">
+                <Button
+                  variant="contained"
+                  className="signup-button"
+                  onClick={buttonHandler}
+                >
                   Sing Up
                 </Button>
               ) : null}
