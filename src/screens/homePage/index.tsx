@@ -10,42 +10,59 @@ import "../../css/home.css";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
-import { setPopularDishes } from "./slice";
+import { setNewDishes, setPopularDishes, setTopUsers } from "./slice";
 import { retrievePopularDishes } from "./selector";
 import { Product } from "../../libs/types/products";
 import { ProductCollection } from "../../libs/types/enums/product.enum";
+import ProductService from "../../services/ProductService";
+import { Member } from "../../libs/types/members";
+import MemberService from "../../services/MemberService";
 
 /** REDUX SLICE & SELECTOR **/
 const actionDispatch = (dispatch: Dispatch) => ({
   setPopularDishes: (data: Product[]) => dispatch(setPopularDishes(data)),
+  setNewDishes: (data: Product[]) => dispatch(setNewDishes(data)),
+  setTopUsers: (data: Member[]) => dispatch(setTopUsers(data)),
 });
-
-const popularDishesRetriever = createSelector(
-  retrievePopularDishes,
-  (popularDishes) => ({ popularDishes })
-);
 
 export default function HomePage() {
   const { setPopularDishes } = actionDispatch(useDispatch());
-  const { popularDishes } = useSelector(popularDishesRetriever);
+  const { setNewDishes } = actionDispatch(useDispatch());
+  const { setTopUsers } = actionDispatch(useDispatch());
+
   useEffect(() => {
-    const result: Product[] = [
-      {
-        _id: "1",
-        productCollection: ProductCollection.DESSERT,
-        productName: "Spaghetti Carbonara",
-        productPrice: 12,
-        productLeftCount: 5,
-      },
-      {
-        _id: "2",
+    const product = new ProductService();
+    const member = new MemberService();
+    product
+      .getProducts({
+        page: 1,
+        limit: 4,
+        order: "productViews",
         productCollection: ProductCollection.DISH,
-        productName: "Margherita Pizza",
-        productPrice: 10,
-        productLeftCount: 3,
-      },
-    ];
-    setPopularDishes(result);
+      })
+      .then((data) => {
+        setPopularDishes(data);
+      })
+      .catch((err) => console.log(err));
+
+    product
+      .getProducts({
+        page: 1,
+        limit: 4,
+        order: "createdAt",
+        productCollection: ProductCollection.DISH,
+      })
+      .then((data) => {
+        setNewDishes(data);
+      })
+      .catch((err) => console.log(err));
+
+    member
+      .getTopUsers()
+      .then((data) => {
+        setTopUsers(data);
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   return (
