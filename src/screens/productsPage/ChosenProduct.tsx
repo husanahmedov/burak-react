@@ -6,9 +6,13 @@ import Divider from "../../components/divider";
 import Button from "@mui/material/Button";
 import Rating from "@mui/material/Rating";
 
+// @ts-ignore
 import "swiper/css";
+// @ts-ignore
 import "swiper/css/free-mode";
+// @ts-ignore
 import "swiper/css/navigation";
+// @ts-ignore
 import "swiper/css/thumbs";
 import { FreeMode, Navigation, Thumbs } from "swiper";
 
@@ -23,6 +27,7 @@ import ProductService from "../../services/ProductService";
 import MemberService from "../../services/MemberService";
 import { useDispatch, useSelector } from "react-redux";
 import { serverApi } from "../../libs/config";
+import { CartItem } from "../../libs/types/search";
 
 const actionDispatch = (dispatch: Dispatch) => ({
   setRestaurant: (data: Member | null) => dispatch(setRestaurant(data)),
@@ -42,7 +47,11 @@ const restaurantRetriever = createSelector(
   })
 );
 
-export default function ChosenProduct() {
+interface ChosenProductProps {
+  onAdd: (item: CartItem) => void;
+}
+export default function ChosenProduct(props: ChosenProductProps) {
+  const { onAdd } = props;
   const { productId } = useParams<{ productId: string }>();
   const { setRestaurant, setChosenProduct } = actionDispatch(useDispatch());
   const { chosenProduct } = useSelector(chosenProductsRetriever);
@@ -112,7 +121,21 @@ export default function ChosenProduct() {
               <span>{chosenProduct.productPrice}</span>
             </div>
             <div className={"button-box"}>
-              <Button variant="contained">Add To Basket</Button>
+              <Button
+                variant="contained"
+                onClick={(e) => {
+                  onAdd({
+                    _id: chosenProduct._id,
+                    name: chosenProduct.productName,
+                    quantity: 1,
+                    price: chosenProduct.productPrice,
+                    image: chosenProduct.productImages?.[0],
+                  });
+                  e.stopPropagation();
+                }}
+              >
+                Add To Basket
+              </Button>
             </div>
           </Box>
         </Stack>
