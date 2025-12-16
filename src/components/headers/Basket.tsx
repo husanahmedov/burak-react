@@ -8,7 +8,11 @@ import { DeleteForever } from "@mui/icons-material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useHistory } from "react-router-dom";
 import { CartItem } from "../../libs/types/search";
-import { serverApi } from "../../libs/config";
+
+import { Messages, serverApi } from "../../libs/config";
+import { sweetErrorHandling } from "../../libs/sweetAlert";
+import { useGlobals } from "../../hooks/useGlobals";
+import OrderService from "../../services/OrderService";
 
 interface BasketProps {
   cartItems: CartItem[];
@@ -20,7 +24,7 @@ interface BasketProps {
 
 export default function Basket(props: BasketProps) {
   const { cartItems, onAdd, onRemove, onDelete, onDeleteAll } = props;
-  const authMember = null;
+  const { authMember, setOrderBuilder } = useGlobals();
   const history = useHistory();
 
   const itemsPrice: number = cartItems.reduce(
@@ -40,6 +44,25 @@ export default function Basket(props: BasketProps) {
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const proceedOrderHandler = async () => {
+    try {
+      handleClose();
+      if (!authMember) {
+        throw new Error(Messages.error2);
+      }
+      const order = new OrderService();
+      await order.createOrder(cartItems);
+
+      onDeleteAll();
+      setOrderBuilder(new Date());
+
+      history.push("/orders");
+    } catch (err) {
+      console.log(err);
+      sweetErrorHandling(err);
+    }
   };
 
   return (
@@ -147,7 +170,11 @@ export default function Basket(props: BasketProps) {
               <span className={"price"}>
                 Total: ${totalPrice} (${itemsPrice}+${shippingCost})
               </span>
-              <Button startIcon={<ShoppingCartIcon />} variant={"contained"}>
+              <Button
+                startIcon={<ShoppingCartIcon />}
+                variant={"contained"}
+                onClick={proceedOrderHandler}
+              >
                 Order
               </Button>
             </Box>
@@ -158,4 +185,8 @@ export default function Basket(props: BasketProps) {
       </Menu>
     </Box>
   );
+}
+
+function setOrderBuilder(arg0: Date) {
+  throw new Error("Function not implemented.");
 }

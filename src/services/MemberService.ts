@@ -79,6 +79,33 @@ class MemberService {
       throw err;
     }
   }
+
+  public async updateMember(input: MemberUpdateInput): Promise<Member> {
+    try {
+      const formData = new FormData();
+      formData.append("memberNick", input.memberNick || "");
+      formData.append("memberPhone", input.memberPhone || "");
+      formData.append("memberAddress", input.memberAddress || "");
+      formData.append("memberDescription", input.memberDescription || "");
+      formData.append("memberImage", input.memberImage || "");
+
+      const result = await axios(`${serverApi}/member/update`, {
+        method: "POST",
+        data: formData,
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const member = result.data;
+      localStorage.setItem("memberData", JSON.stringify(member));
+      return member;
+    } catch (err) {
+      console.log("Error, updateMember:", err);
+      throw err;
+    }
+  }
 }
 
 export default MemberService;

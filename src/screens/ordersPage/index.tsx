@@ -1,5 +1,5 @@
-import { useState, SyntheticEvent } from "react";
-import { Stack, Box, Container } from "@mui/material";
+import { useState, SyntheticEvent, useEffect } from "react";
+import { Stack, Box, Container, TextField, Divider } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TabContext from "@mui/lab/TabContext";
@@ -7,23 +7,76 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PausedOrders from "./PausedOrders";
 import ProcessOrders from "./ProcessOrders";
 import FinishedOrders from "./FinishedOrders";
-import "../../css/order.css";
-import Divider from "../../components/divider";
+import "../../../css/order.css";
+import { Dispatch } from "@reduxjs/toolkit";
+import { Order, OrderInquiry } from "../../libs/types/order";
+import { setFinishedOrders, setPausedOrders, setProcessOrders } from "./slice";
+import { useDispatch } from "react-redux";
+import { OrderStatus } from "../../libs/types/enums/order.enum";
+import OrderService from "../../services/OrderService";
+import { useGlobals } from "../../hooks/useGlobals";
+import { sweetFailureProvider } from "../../libs/sweetAlert";
+import { useHistory } from "react-router-dom";
+import { serverApi } from "../../libs/config";
+import { MemberType } from "../../libs/types/enums/member.enum";
+
+const actionDispatch = (dispatch: Dispatch) => ({
+  setProcessOrders: (data: Order[]) => dispatch(setProcessOrders(data)),
+  setPausedOrders: (data: Order[]) => dispatch(setPausedOrders(data)),
+  setFinishedOrders: (data: Order[]) => dispatch(setFinishedOrders(data)),
+});
 
 export default function OrdersPage() {
+  const { setFinishedOrders, setPausedOrders, setProcessOrders } =
+    actionDispatch(useDispatch());
+  const { orderBuilder } = useGlobals();
   const [value, setValue] = useState("1");
+  const [orderIquiry, setOrderInquiry] = useState<OrderInquiry>({
+    page: 1,
+    limit: 5,
+    orderStatus: OrderStatus.PAUSE,
+  });
+
+  useEffect(() => {
+    const order = new OrderService();
+    order
+      .getMyOrders({ ...orderIquiry, orderStatus: OrderStatus.PAUSE })
+      .then((data) => setPausedOrders(data))
+      .catch((err) => {
+        console.log(err);
+      });
+
+    order
+      .getMyOrders({ ...orderIquiry, orderStatus: OrderStatus.PROCESS })
+      .then((data) => setProcessOrders(data))
+      .catch((err) => {
+        console.log(err);
+      });
+    order
+      .getMyOrders({ ...orderIquiry, orderStatus: OrderStatus.FINISH })
+      .then((data) => setFinishedOrders(data))
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [orderIquiry, orderBuilder]);
 
   const handleChange = (e: SyntheticEvent, newValue: string) => {
     setValue(newValue);
   };
+  const history = useHistory();
+  const { authMember } = useGlobals();
+  if (!authMember) {
+    sweetFailureProvider("Please login first");
+    history.push("/");
+  }
   return (
     <div className="order-page">
       <Container
         className="order-container"
         sx={{
           flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+          justifyContent: "center",
+          // alignItems: "center",
         }}
       >
         <Stack className="order-left">
@@ -43,60 +96,83 @@ export default function OrdersPage() {
               </Box>
             </Box>
             <Stack className="order-main-content">
-              <PausedOrders />
-              <ProcessOrders />
+              <PausedOrders setValue={setValue} />
+              <ProcessOrders setValue={setValue} />
               <FinishedOrders />
             </Stack>
           </TabContext>
         </Stack>
         <Stack className="order-right">
-          <Box className="order-info-box">
+          <Box className="order-info-box neumorphism-box">
             <Box className="member-box">
-              <div className="order-user-img">
+              <div className="order-user-img avatar-hover">
                 <img
-                  src="/icons/default-user.svg"
+                  src={
+                    authMember?.memberImage
+                      ? `${serverApi}/${authMember.memberImage} `
+                      : "/icons/default-user.svg"
+                  }
                   className="order-user-avatar"
                 />
                 <div className="order-user-icon-box">
                   <img
-                    src="/icons/user-badge.svg"
+                    src={
+                      authMember?.memberType === MemberType.USER
+                        ? "/icons/user-badge.svg"
+                        : "/icons/restaurant.svg"
+                    }
                     className="order-user-prof-img"
                   />
                 </div>
               </div>
-              <span className="order-user-name">Martin</span>
-              <span className="order-user-prof">User</span>
+              <span className="order-user-name">{authMember?.memberNick}</span>
+              <span className="order-user-prof">{authMember?.memberType}</span>
             </Box>
-            <Divider height="4" width="60" bg="#9b9797ff" />
+            <Divider className="soft-divider" />
             <Box className="member-location">
               <div className="member-location-info">
-                {" "}
-                <LocationOnIcon /> Do not exist
+                <LocationOnIcon />{" "}
+                {authMember?.memberAddress
+                  ? authMember.memberAddress
+                  : "no address"}
               </div>
             </Box>
           </Box>
-          <Box className="order-payment-info-box">
-            <div className="payment-card-number">
-              Card number: **** 4090 2002 7495
-            </div>
-            <div className="payment-card-datas">
-              <span className="payment-expire-data">07/24</span>
-              <span> CVV: 010</span>
-            </div>
-            <div className="payment-card-user-name">Justin Robertson</div>
-            <div
-              className="payment-card-types"
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-evenly",
-                alignItems: "center",
-              }}
-            >
+
+          <Box className="order-payment-info-box neumorphism-box">
+            <TextField
+              className="payment-card-number"
+              variant="outlined"
+              placeholder="Card number"
+              fullWidth
+              InputProps={{ style: { backgroundColor: "#fff" } }}
+            />
+            <Box className="payment-card-datas">
+              <TextField
+                className="payment-expire-data"
+                variant="outlined"
+                placeholder="MM/YY"
+                InputProps={{ style: { backgroundColor: "#fff" } }}
+              />
+              <TextField
+                variant="outlined"
+                placeholder="CVV"
+                InputProps={{ style: { backgroundColor: "#fff" } }}
+              />
+            </Box>
+            <TextField
+              className="payment-card-user-name"
+              variant="outlined"
+              placeholder="Cardholder Name"
+              fullWidth
+              InputProps={{ style: { backgroundColor: "#fff" } }}
+            />
+            <Box className="payment-card-types">
               <img src="/icons/western-card.svg" />
               <img src="/icons/master-card.svg" />
               <img src="/icons/paypal-card.svg" />
               <img src="/icons/visa-card.svg" />
-            </div>
+            </Box>
           </Box>
         </Stack>
       </Container>
