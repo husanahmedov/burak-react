@@ -7,7 +7,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PausedOrders from "./PausedOrders";
 import ProcessOrders from "./ProcessOrders";
 import FinishedOrders from "./FinishedOrders";
-import "../../../css/order.css";
+
+import "../../css/order.css";
 import { Dispatch } from "@reduxjs/toolkit";
 import { Order, OrderInquiry } from "../../libs/types/order";
 import { setFinishedOrders, setPausedOrders, setProcessOrders } from "./slice";
